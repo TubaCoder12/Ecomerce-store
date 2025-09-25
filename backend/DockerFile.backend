@@ -1,0 +1,26 @@
+# Development stage
+FROM node:24 AS dev
+WORKDIR /app
+
+# Ensure dev dependencies are installed
+ENV NODE_ENV=development
+
+COPY backend/package*.json ./
+RUN npm install --include=dev
+
+COPY backend/. .
+
+CMD ["npm", "run", "dev"]
+
+# Production stage
+FROM node:24 AS prod
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+COPY backend/package*.json ./
+RUN npm install --only=production
+
+COPY backend/. .
+
+CMD ["node", "server.js"]
