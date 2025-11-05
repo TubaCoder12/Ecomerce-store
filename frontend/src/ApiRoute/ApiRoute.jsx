@@ -3,7 +3,7 @@ import { store } from "../app/store";
 import { login, Logout } from "../app/Redux/AuthSlice";
 
 
-const BASE_URL = "http://localhost:4000/api/v1";
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 export const API = {
   ACCESS: "/user/access",
