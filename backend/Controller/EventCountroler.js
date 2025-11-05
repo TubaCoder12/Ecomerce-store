@@ -22,9 +22,7 @@ export const fetchEvents = async (req, res) => {
 };
 
 // ✅ Add Event with Cloudinary upload
-import fs from 'fs';
-import Event from '../models/Event.js';
-import cloudinary from '../config/cloudinary.js'; // tumhara already export kiya hua
+
 
 export const addEvent = async (req, res) => {
   try {
