@@ -22,6 +22,10 @@ export const fetchEvents = async (req, res) => {
 };
 
 // ✅ Add Event with Cloudinary upload
+import fs from 'fs';
+import Event from '../models/Event.js';
+import cloudinary from '../config/cloudinary.js'; // tumhara already export kiya hua
+
 export const addEvent = async (req, res) => {
   try {
     const { title, destination, startDate, endDate, activities, notes } = req.body;
@@ -29,7 +33,10 @@ export const addEvent = async (req, res) => {
     let images = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
-        const result = await cloudinary.uploader.upload(file.path, { folder: "events" });
+        const result = await cloudinary.uploader.upload(file.path, {
+          folder: "events",
+          resource_type: "image", // ensure correct type
+        });
         images.push(result.secure_url);
 
         // delete temp file
@@ -55,11 +62,13 @@ export const addEvent = async (req, res) => {
       message: "Event added successfully",
     });
   } catch (error) {
+    console.error("Cloudinary / Add Event Error:", error);
     res.status(500).json({
       error: error.message,
     });
   }
 };
+
 
 // ✅ Get event by ID
 export const getEventById = async (req, res) => {
