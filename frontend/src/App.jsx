@@ -3,25 +3,27 @@ import { Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 
-import Navbar from "./Component/Navbar/Navbar";
-import Signup from "./Component/Signup/Signup";
-import Login from "./Component/Login/Login";
-import Home from "./Component/Home/Home";
-import ActivateAccount from "./Component/ActiveAccount/ActivateAccount";
-import ForgetPasswordForm from "./Component/ForgetPassword/ForgetPassword";
-import AccessAccount from "./Component/AccessAcount/AccessAccount";
-import ResetPassword from "./Component/ResetPassword/ResetPassword";
-
 import { api, API } from "./ApiRoute/ApiRoute";
 import { login } from "./app/Redux/AuthSlice";
+
+import MainLayout from "./Component/Layout/MainLayout";
+
+import Home from "./Component/Home/Home";
+
 import Dashboard from "./Component/Dashboard/Dashboard";
-import AddProduct from "./Component/ProductDashboad/AddProduct";
-import ViewProduct from "./Component/ProductDashboad/ViewProduct";
-import EditProduct from "./Component/ProductDashboad/EditProduct";
+import AddProduct from "./Component/EventDashboad/AddEvent";
+import ViewProduct from "./Component/EventDashboad/FeatureEvents";
+import EditProduct from "./Component/EventDashboad/EditEvent";
+import Login from "./features/auth/Login";
+import Signup from "./features/auth/Signup";
+import ActivateAccount from "./features/auth/ActivateAccount";
+import ForgetPasswordForm from "./features/auth/ForgetPassword";
+import AccessAccount from "./features/auth/AccessAccount";
+import ResetPassword from "./features/auth/ResetPassword";
 
 const App = () => {
   const dispatch = useDispatch();
-  const { token, user } = useSelector((state) => state.auth);
+  const { token } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const refreshAccessToken = async () => {
@@ -41,25 +43,29 @@ const App = () => {
       }
     };
     refreshAccessToken();
-  }, [dispatch]);
+  }, [dispatch, token]);
 
   return (
     <>
       <ToastContainer />
-      <Navbar />
 
+      {/* Layout-based routing */}
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/event/add" element={<AddProduct />} />
+          <Route path="/event/view" element={<ViewProduct />} />
+          <Route path="/EditEvent/:id" element={<EditProduct />} />
+        </Route>
+
+        {/* Without Layout (Normal Auth Pages) */}
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/auth/activate/:token" element={<ActivateAccount />} />
         <Route path="/forget-password" element={<ForgetPasswordForm />} />
         <Route path="/auth/access/:token" element={<AccessAccount />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/product/add" element={<AddProduct />} />
-        <Route path="/product/view" element={<ViewProduct />} />
-        <Route path="/edit-product/:id" element={<EditProduct />} />
       </Routes>
     </>
   );

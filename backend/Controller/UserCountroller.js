@@ -13,44 +13,63 @@ export const preSignup = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Check if email already exists
     const emailExist = await User.findOne({ email });
     if (emailExist) {
       return res.json({ error: "Email already exists" });
     }
 
+    // Hash password before saving
+    const salt = await bcryptjs.genSalt(12);
+    const hashedPassword = await bcryptjs.hash(password, salt);
+
+    // Save user directly in DB
+    const user = await new User({
+      email,
+      password: hashedPassword,
+      username: nanoid(8),
+    }).save();
+
+    // JWT Token for future use (optional)
     const token = jwt.sign({ email, password }, process.env.JWT_SECRET, {
       expiresIn: "10m",
     });
 
-    await sendEmail(
-      email,
-      "Verify your account",
-      `<a href="${process.env.Client_Url}/auth/activate/${token}"
-        style="
-              display: inline-block;
-              padding: 12px 24px;
-              font-size: 16px;
-              color: white;
-              background-color: #f97316; /* orange-500 */
-              text-decoration: none;
-              border-radius: 6px;
-              font-weight: bold;
-              margin-top: 20px;
-            "
-      >Activate Account</a>`
-    );
+    // Try sending email (ignore error if fails)
+    try {
+      await sendEmail(
+        email,
+        "Verify your account",
+        `<a href="${process.env.Client_Url}/auth/activate/${token}"
+          style="
+            display: inline-block;
+            padding: 12px 24px;
+            font-size: 16px;
+            color: white;
+            background-color: #f97316;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            margin-top: 20px;
+          "
+        >Activate Account</a>`
+      );
+    } catch (err) {
+      console.log("⚠️ Email not sent (Resend free mode):", err.message);
+    }
 
+    // Response
     return res.json({
       message:
-        "Signup successful. Please check your email for verification link.",
-      token,
+        "Signup successful! You can now log in. (Email may not be delivered in free mode)",
+      user: { _id: user._id, email: user.email },
     });
   } catch (error) {
     return res.status(500).json({ error: "Server error: " + error.message });
   }
 };
 
-// Actual Signup
+
 export const Signup = async (req, res) => {
   try {
     const { email, password } = jwt.verify(
@@ -90,7 +109,7 @@ export const Signup = async (req, res) => {
   }
 };
 
-// Login controller with role info
+
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -268,5 +287,21 @@ export const refreshToken = async (req, res) => {
   } catch (err) {
     console.error("Refresh token error:", err.message);
     return res.status(403).json({ error: "Invalid or expired refresh token" });
+  }
+};
+
+
+export const logoutUser = (req, res) => {
+  try {
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+
+    return res.json({ message: "Logged out successfully" });
+  } catch (err) {
+    console.error("Logout error:", err);
+    return res.status(500).json({ error: "Server crash on logout" });
   }
 };

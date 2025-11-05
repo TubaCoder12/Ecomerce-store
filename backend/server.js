@@ -4,8 +4,10 @@ import dotenv from "dotenv";
 import UserRoutes from "./Route/UserRoute.js";
 import dbconnection from "./config/dbconnection.js";
 import cors from "cors";
-import ProductRoutes from "./Route/ProductRoute.js";
+
 import cookieParser from "cookie-parser";
+import EventRoutes from "./Route/EventRoute.js";
+import ChatbotRouter from "./Route/ChatbotRoute.js";
 const app = express();
 dotenv.config();
 app.use(cookieParser());
@@ -14,12 +16,15 @@ app.use(
   cors({
     origin: "http://localhost:3000",
     credentials: true,
+  
+   
   })
 );
 
 const port = 4000;
 app.use("/api/v1/user", UserRoutes);
-app.use("/api/v1/product", ProductRoutes);
+app.use("/api/v1/event", EventRoutes);
+app.use("/api/v1/chatbot", ChatbotRouter);
 app.use("/uploads", express.static("uploads"));
 app.get("/", (req, res) => {
   res.send("heelo   ....");
